@@ -1,0 +1,81 @@
+# apiVersion: karpenter.sh/v1alpha5
+# kind: Provisioner
+# metadata:
+#   name: default
+# spec:
+#   # Labels are key-values that are applied to all nodes
+#   labels: ${karpenter_labels}
+    
+#   # References cloud provider-specific custom resource, see your cloud provider specific documentation
+#   providerRef:
+#     name: default
+#   # Requirements that constrain the parameters of provisioned nodes.
+#   # These requirements are combined with pod.spec.affinity.nodeAffinity rules.
+#   # Operators { In, NotIn } are supported to enable including or excluding values
+#   requirements:
+#     - key: "node.kubernetes.io/instance-type"
+#       operator: In
+#       values: ${karpenter_instance_types}
+#     - key: "kubernetes.io/arch"
+#       operator: In
+#       values: ${karpenter_instance_architecture}
+#     - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
+#       operator: In
+#       values: ${karpenter_capacity_type}
+#     - key: "kubernetes.io/os"
+#       operator: In
+#       values:
+#         - linux
+#   # Resource limits constrain the total size of the cluster.
+#   # Limits prevent Karpenter from creating new instances once the limit is exceeded.
+#   limits:
+#     resources:
+#       cpu: ${karpenter_cpu_limit}
+#       memory: ${karpenter_memory_limit}
+#   # Enables consolidation which attempts to reduce cluster cost by both removing un-needed nodes and down-sizing those
+#   # that can't be removed.  Mutually exclusive with the ttlSecondsAfterEmpty parameter.
+#   consolidation:
+#     enabled: ${karpenter_consolidation}
+#   # If omitted, the feature is disabled and nodes will never expire.  If set to less time than it requires for a node
+#   # to become ready, the node may expire before any pods successfully start.
+#   # ttlSecondsUntilExpired: 2592000 # 30 Days = 60 * 60 * 24 * 30 Seconds;
+#   # ttlSecondsAfterEmpty: 30
+
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: default
+spec:
+  template:
+    metadata:
+      # Labels are key-values that are applied to all nodes
+      labels: ${karpenter_labels}
+  # Requirements that constrain the parameters of provisioned nodes.
+  # These requirements are combined with pod.spec.affinity.nodeAffinity rules.
+  # Operators { In, NotIn } are supported to enable including or excluding values
+    spec:
+      requirements:
+      - key: "node.kubernetes.io/instance-type"
+        operator: In
+        values: ${karpenter_instance_types}
+      - key: "kubernetes.io/arch"
+        operator: In
+        values: ${karpenter_instance_architecture}
+      - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
+        operator: In
+        values: ${karpenter_capacity_type}
+      - key: "kubernetes.io/os"
+        operator: In
+        values: ["linux"]
+      - key: "topology.kubernetes.io/zone"
+        operator: In
+        values: ["us-east-1a", "us-east-1b", "us-east-1c"]
+      nodeClassRef: 
+        apiVersion: karpenter.k8s.aws/v1beta1
+        kind: EC2NodeClass
+        name: default
+  disruption:
+    consolidationPolicy: WhenUnderutilized
+limits:
+  cpu: ${karpenter_cpu_limit}
+  memory: ${karpenter_memory_limit}

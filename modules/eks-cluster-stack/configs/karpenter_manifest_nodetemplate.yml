@@ -1,0 +1,26 @@
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  instanceProfile: "${karpenter_node_instance_profile}"
+  amiFamily: "AL2"
+#   amiSelectorTerms:
+#     - id: "ami-02b9b637bbbeced4b"  
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "${karpenter_subnet_tag}"
+        Environment: "${environment}"
+  securityGroupSelectorTerms:
+    - tags:
+        aws:eks:cluster-name: "${cluster_name}"
+  tags:
+    karpenter.sh/discovery: "${karpenter_subnet_tag}"
+    IntentLabel: "apps"
+  userData: |
+    ${karpenter_userdata}
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: "${karpenter_node_root_vol_size}"
+        volumeType: gp3

@@ -1,0 +1,3 @@
+locals {
+    allowed_accounts = [""]
+}

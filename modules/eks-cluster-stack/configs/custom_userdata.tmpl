@@ -1,0 +1,35 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash
+volumeString=""
+vols=$(lsblk --output NAME -lnd)
+for vol in $vols; do
+	if [[ $vol == nvme* ]]; then
+		fs=$(file -sb /dev/$vol)
+		if [[ "$fs" == "data" ]]; then
+			volumeString="$volumeString /dev/$vol "
+		fi
+	fi
+done
+echo $volumeString
+vgcreate lvm $volumeString
+lvcreate -n lvm -l 100%FREE lvm
+mkfs -t xfs /dev/lvm/lvm
+mkdir -p /eksmounts
+mount -o rw,pquota /dev/lvm/lvm /eksmounts
+
+
+KUBELET_CONFIG=/etc/kubernetes/kubelet/kubelet-config.json
+if ! grep -q imageGCHighThresholdPercent $KUBELET_CONFIG;
+then
+echo "$(jq ".imageGCHighThresholdPercent=70" $KUBELET_CONFIG)" > $KUBELET_CONFIG
+fi
+if ! grep -q imageGCLowThresholdPercent $KUBELET_CONFIG;
+then
+echo "$(jq ".imageGCLowThresholdPercent=60" $KUBELET_CONFIG)" > $KUBELET_CONFIG
+fi 
+--==MYBOUNDARY==--

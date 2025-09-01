@@ -1,0 +1,33 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: ${name}
+spec:
+  amiFamily: ${ami_family}
+  role: ${instance_profile}
+  subnetSelectorTerms:
+  - ${subnet_selector}
+  securityGroupSelectorTerms:
+  - ${security_group_selector}
+  amiSelectorTerms:
+  - ${ami_selector}
+  tags:
+    ${tags}
+  blockDeviceMappings:
+  - deviceName: ${device_name}
+    ebs:
+      volumeSize: "${volume_size}"
+      volumeType: "${volume_type}"
+      encrypted: ${encrypted}
+      deleteOnTermination: ${delete_on_termination}
+  metadataOptions:
+    httpTokens: optional          
+    # httpPutResponseHopLimit: 2
+    # httpEndpoint: enabled
+  userData: |
+    ${userdata}
+
+
+
+
+

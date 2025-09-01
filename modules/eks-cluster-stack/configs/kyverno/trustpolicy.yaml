@@ -1,0 +1,36 @@
+apiVersion: notation.nirmata.io/v1alpha1
+kind: TrustPolicy
+metadata:
+  name: name-tp-notation
+spec:
+  trustPolicies:
+    - name: aws-signer-tp
+      registryScopes:
+        - '*'
+      signatureVerification:
+        level: strict
+      trustStores:
+        - signingAuthority:aws-signer-ts
+      trustedIdentities:
+        - arn:aws:signer:us-east-1:949744774897:/signing-profiles/ecr_signing_profile
+  trustPolicyName: name-tp-notation
+  version: '1.0'
+---
+apiVersion: notation.nirmata.io/v1alpha1
+kind: TrustPolicy
+metadata:
+  name: name-tp-notation-fail
+spec:
+  trustPolicies:
+    - name: aws-signer-tp
+      registryScopes:
+        - '*'
+      signatureVerification:
+        level: strict
+      trustStores:
+        - signingAuthority:aws-signer-ts-fail
+      trustedIdentities:
+        - arn:aws:signer:us-east-1:949744774897:/signing-profiles/ecr_signing_profile
+  trustPolicyName: tp-test-notation-fail
+  version: '1.0'
+

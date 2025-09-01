@@ -1,0 +1,105 @@
+loki:
+  tolerations:
+    - key: "monitoring"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+  replicas: 3
+  auth_enabled: false
+  commonConfig:
+    path_prefix: /var/loki
+    replication_factor: 1
+  compactor:
+    apply_retention_interval: 1h
+    compaction_interval: 5m
+    retention_delete_worker_count: 500
+    retention_enabled: true
+    shared_store: s3
+    working_directory: /data/compactor
+
+  env:
+  - name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+
+  extraArgs:
+    config.expand-env: true
+
+  config:
+    query_scheduler:
+      max_outstanding_requests_per_tenant: 4096
+    frontend:
+      max_outstanding_per_tenant: 4096
+    query_range:
+      parallelise_shardable_queries: true
+    limits_config:
+      split_queries_by_interval: 15m
+      allow_structured_metadata:
+      max_query_parallelism: 32
+      allow_structured_metadata: false
+    querier:
+      query_timeout: 2m
+      engine:
+        timeout: 2m
+    memberlist:
+      bind_addr:
+      - $${MY_POD_IP}
+    schema_config:
+      configs:
+      - from: "2020-05-15"
+        store: boltdb-shipper
+        object_store: s3
+        schema: v13
+        index:
+          period: 24h
+          prefix: loki_index_
+
+    storage_config:
+      aws:
+        region: ${region}
+        bucketnames: ${bucketname}
+        s3forcepathstyle: false
+      boltdb_shipper:
+        shared_store: s3
+        cache_ttl: 24h
+  serviceAccount:
+    create: true
+    name: ${sa_name}
+    annotations:
+      eks.amazonaws.com/role-arn: "${irsa_arn}"
+  write:
+    replicas: 2
+  read:
+    replicas: 1
+
+grafana:
+  enabled: true
+  tolerations:
+    - key: "monitoring"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"  
+  sidecar:
+    datasources:
+      enabled: true
+      label: grafana_datasource
+      labelValue: "1"
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+    alerts:
+      enabled: true
+      label: grafana_alert
+      labelValue: "1"
+      searchNamespace: ALL
+  image:
+    tag: 10.2.0
+    users:
+      default_theme: dark
+
+promtail:
+  tolerations:
+  - operator: Exists

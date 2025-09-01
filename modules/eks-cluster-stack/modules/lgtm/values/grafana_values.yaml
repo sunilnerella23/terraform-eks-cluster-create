@@ -1,0 +1,21 @@
+sidecar:
+  datasources:
+    enabled: true
+    label: grafana_datasource
+    labelValue: "1"
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: ALL
+  alerts:
+    enabled: true
+    label: grafana_alert
+    labelValue: "1"
+    searchNamespace: ALL
+
+grafana.ini:
+  dataproxy:
+    dialTimeout: 600
+    timeout: 600
+    tls_handshake_timeout_seconds: 600
