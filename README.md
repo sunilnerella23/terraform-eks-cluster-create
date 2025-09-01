@@ -22,3 +22,18 @@ The purpose of this repository is to maintain the blueprints and modules for our
 
 Navigate to each modules directory individually and execute the following command:
 `terraform destroy`
+
+# Terraform EKS Cluster Create
+
+This repository provides **Terraform modules** for creating and managing Amazon EKS clusters.  
+It is intended to be consumed by a higher-level orchestration layer such as **Terragrunt**.
+
+👉 For end-to-end cluster creation, please refer to the companion repo:  
+[terragrunt-eks-cluster-create](https://github.com/sunilnerella23/terragrunt-eks-cluster-create)
+
+---
+
+## 📦 Modules
+- **eks-cluster-stack** → Provisions the EKS cluster, managed node groups, IAM roles.
+- **addons** → Installs optional addons (ArgoCD, Istio, Prometheus, Kyverno, Mimir, etc).
+- **irsa** → Creates IAM Roles for Service Accounts.
